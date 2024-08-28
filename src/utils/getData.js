@@ -1,28 +1,27 @@
-// Goodluck keeping track a sink & a weight
 const fetchItems = async () => {
   const IDS = [23, 54, 25, 65, 134, 90, 33, 95];
 
   try {
-    const requests = IDS.map(async (id) => {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-      const result = await response.json();
-      if (!response.ok) {
-        console.log(response);
-        throw new Error(response);
-      }
-
-      return {
-        id: result.id,
-        name: result.name,
-        imgSrc: result.sprites.other['official-artwork'].front_default,
-      };
-    });
+    const requests = IDS.map((id) =>
+      fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Error fetching ID ${id}: ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then((result) => ({
+          id: result.id,
+          name: result.name,
+          imgSrc: result.sprites.other['official-artwork'].front_default,
+        })),
+    );
 
     const results = await Promise.all(requests);
     return results;
   } catch (error) {
-    console.log('Fetch failed: ', error);
-    return [];
+    console.error('Fetch failed:', error);
+    throw error; // Pass error to App.jsx
   }
 };
 
