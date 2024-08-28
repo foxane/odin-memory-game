@@ -63,7 +63,7 @@ function App() {
     }
     setScore(currentScore);
     if (currentScore >= highScore) setHighScore(currentScore);
-    if (currentScore === 8) {
+    if (currentScore === pokeData.length) {
       gameOver(true);
       return;
     }

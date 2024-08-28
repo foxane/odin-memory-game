@@ -1,6 +1,8 @@
+const ITEM_COUNT = 9; // Hoy many card to use
+
 const randomizeIds = () => {
   const result = [];
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < ITEM_COUNT; i++) {
     let randomNumber = Math.ceil(Math.random() * 200);
     while (result.includes(randomNumber)) {
       randomNumber = Math.ceil(Math.random() * 200);
