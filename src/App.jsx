@@ -1,5 +1,7 @@
 import Card from './components/Card';
 import Loading from './components/Loading';
+import Header from './components/Header';
+import Modal from './components/Modal';
 import fetchItems from './utils/getData';
 import { useEffect, useState } from 'react';
 
@@ -10,6 +12,7 @@ function App() {
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [clickedPokemon, setClickedPokemon] = useState([]);
+  const [modal, setModal] = useState('');
 
   useEffect(() => {
     const loadPokeData = async () => {
@@ -27,34 +30,60 @@ function App() {
     loadPokeData();
   }, []);
 
-  const gameOver = () => {
+  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
+  const shuffleCard = () => {
+    const result = pokeData.slice();
+    for (let i = pokeData.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    setPokeData(result);
+  };
+
+  const gameOver = (isWin) => {
+    const message = [
+      'You win',
+      `You lose! Already clicked ${capitalize(
+        clickedPokemon[clickedPokemon.length - 1],
+      )}`,
+    ];
+    setModal(isWin ? message[0] : message[1]);
     setScore(0);
     setClickedPokemon([]);
-    alert('Game Over\nYour score is: ', score);
+    shuffleCard();
   };
 
   const clickHandler = (pokemonName) => {
+    const currentScore = score + 1;
+
     if (clickedPokemon.includes(pokemonName)) {
-      gameOver();
+      gameOver(false);
       return;
     }
-
-    setClickedPokemon((prevState) => [...prevState, pokemonName]);
-    const currentScore = score + 1;
     setScore(currentScore);
-    if (score >= highScore) setHighScore(currentScore);
+    if (currentScore >= highScore) setHighScore(currentScore);
+    if (currentScore === 8) {
+      gameOver(true);
+      return;
+    }
+    setClickedPokemon((prevState) => [...prevState, pokemonName]);
+    shuffleCard();
   };
 
-  if (fetchFailed) return <div>Fetch failed</div>;
+  if (fetchFailed)
+    return <Modal text={'Failed receiving data'} setModal={setModal} />;
   if (loading) return <Loading />;
 
   return (
     <div className="app">
-      <p>{score}</p>
-      <p>{highScore}</p>
-      {pokeData.map((data) => (
-        <Card key={data.id} data={data} clickHandler={clickHandler} />
-      ))}
+      {modal !== '' && <Modal text={modal} setModal={setModal} />}
+      <Header score={score} highScore={highScore} />
+      <div className="card-container">
+        {pokeData.map((data) => (
+          <Card key={data.id} data={data} clickHandler={clickHandler} />
+        ))}
+      </div>
     </div>
   );
 }
